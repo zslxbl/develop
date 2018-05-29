@@ -24,11 +24,14 @@ const web3 = new Web3(provider);
 
 
     // 5.创建合约实例并且部署
+    console.time('contract-deploy');
     const result = await new web3.eth.Contract(JSON.parse(interface))
         .deploy({ data: bytecode, arguments: ['AUDI'] })
-        .send({ from: accounts[0], gas: 100000 });
+        .send({ from: accounts[0], gas: 1000000 });
 
-    console.log('合约部署成功：', result);
+    console.timeEnd('contract-deploy');
+
+    console.log('合约部署成功：', result.options.address);
 
 })();
 
