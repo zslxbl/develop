@@ -30,6 +30,17 @@ library SafeMath {
     }
 }
 
+contract ProjectList {
+    using SafeMath for uint;
+    address[] public projects;
+
+    function createProject(string _description, uint _minInvest, uint _maxInvest, uint _goal) public {
+        address newProject = new Project(_description, _minInvest, _maxInvest, _goal, msg.sender);
+        projects.push(newProject);
+    }
+}
+
+
 contract Project {
     using SafeMath for uint;
 
@@ -65,12 +76,13 @@ contract Project {
     // 资金支出列表
     Payment[] public payments;
 
-    constructor(string _description, uint _minInvest, uint _maxInvest, uint _goal) public {
+    constructor(string _description, uint _minInvest, uint _maxInvest, uint _goal, address _owner) public {
         owner = msg.sender;
         description = _description;
         minInvest = _minInvest;
         maxInvest = _maxInvest;
         goal = _goal;
+        owner = _owner;
     }
 
     function contribute() public payable {
@@ -81,7 +93,13 @@ contract Project {
         newBalance = address(this).balance.add(msg.value);
         require(newBalance <= goal);
 
-        investors.push(msg.sender);
+        // investors.push(msg.sender);
+        if (investors[msg.sender] > 0) {
+            investors[msg.sender] += msg.value;
+        } else {
+            investors[msg.sender] = msg.value;
+            investorCount += 1;
+        }
     }
 
     function createPayment(string _description, uint _amount, address _receiver) ownerOnly public {
