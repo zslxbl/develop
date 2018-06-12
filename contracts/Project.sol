@@ -9,12 +9,19 @@ contract Project {
         address[] voters; 
     }
 
+    // 项目所有者
     address public owner;
+    // 项目介绍
     string public description;
+    // 最小投资金额
     uint public minInvest;
+    // 最大投资金额
     uint public maxInvest;
+    // 融资上限
     uint public goal;
+    // 投资人列表
     address[] public investors;
+    // 资金支出列表
     Payment[] public payments;
 
     constructor(string _description, uint _minInvest, uint _maxInvest, uint _goal) public {
