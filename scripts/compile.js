@@ -2,15 +2,25 @@ const fs = require("fs-extra");
 const path = require('path');
 const solc = require('solc');
 
-//cleanup
+//1 cleanup
 const compiledDir = path.resolve(__dirname, '../compiled');
 fs.removeSync(compiledDir);
 fs.ensureDirSync(compiledDir);
-//compile
-const contractPath = path.resolve(__dirname, '../contracts', 'Car.sol');
-const contractSource = fs.readFileSync(contractPath, 'utf8');
 
-const result = solc.compile(contractSource, 1);
+//2 compile
+// const contractPath = path.resolve(__dirname, '../contracts', 'Car.sol');
+// const contractSource = fs.readFileSync(contractPath, 'utf8');
+
+// const result = solc.compile(contractSource, 1);
+
+const contractFiles = fs.readdirSync(paht.resolve(__dirname, '../contracts'));
+contractFiles.forEach(contractFile => {
+    //2.1 compile
+    const contractPath = path.resolve(__dirname, '../contracts', contractFile);
+    const contractSource = fs.readFileSy
+
+});
+
 
 //check error
 // console.log(result.contracts);
