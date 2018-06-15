@@ -146,8 +146,6 @@ contract Project {
 
         payment.voters[msg.sender] = true;
         payment.voterCount += 1;
-
-        payment.voters.push(msg.sender);
     }
 
     function doPayment(uint index) ownerOnly public {

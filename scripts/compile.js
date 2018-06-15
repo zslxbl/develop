@@ -13,31 +13,51 @@ fs.ensureDirSync(compiledDir);
 
 // const result = solc.compile(contractSource, 1);
 
-const contractFiles = fs.readdirSync(paht.resolve(__dirname, '../contracts'));
+const contractFiles = fs.readdirSync(path.resolve(__dirname, '../contracts'));
 contractFiles.forEach(contractFile => {
     //2.1 compile
     const contractPath = path.resolve(__dirname, '../contracts', contractFile);
-    const contractSource = fs.readFileSy
+    const contractSource = fs.readFileSync(contractPath, 'utf8');
+    const result = solc.compile(contractSource, 1);
+    console.log(`file compiled: ${contractFile}`);
+
+    //check error
+    // console.log(result.contracts);
+    // if (Array.isArray(result.errors) && result.errors.length) {
+    //     throw new Error(result.errors[0]);
+    // }
+
+    //2.2 check error
+    if (Array.isArray(result.errors) && result.errors.length) {
+        throw new Error(result.errors[0]);
+    }
+
+    //save to disk
+    // Object.keys(result.contracts).forEach(name => {
+    //     const contractName = name.replace(/^:/, '');
+    //     const filePath = path.resolve(compiledDir, `${contractName}.json`)
+
+    //     fs.outputJsonSync(filePath, result.contracts[name]);
+
+    //     console.log(`save compiled contract ${contractName} to ${filePath}`);
+
+    // });
+
+    //2.3 save to disk
+    Object.keys(result.contracts).forEach(name => {
+        const contractName = name.replace(/^:/, '');
+        const filePath = path.resolve(compiledDir, `${contractName}.json`);
+        fs.outputJsonSync(filePath, result.contracts[name]);
+        console.log(` > contract ${contractName} save to ${filePath}`);
+    });
+
 
 });
 
 
-//check error
-// console.log(result.contracts);
-if (Array.isArray(result.errors) && result.errors.length) {
-    throw new Error(result.errors[0]);
-}
 
-//save to disk
-Object.keys(result.contracts).forEach(name => {
-    const contractName = name.replace(/^:/, '');
-    const filePath = path.resolve(compiledDir, `${contractName}.json`)
 
-    fs.outputJsonSync(filePath, result.contracts[name]);
 
-    console.log(`save compiled contract ${contractName} to ${filePath}`);
-
-});
 
 
 
