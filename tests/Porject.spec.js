@@ -1,11 +1,12 @@
 const path = require('path');
 const assert = require('assert');
 const ganache = require('ganache-cli');
+const BigNumber = require('bignumber.js');
 const Web3 = require('web3');
 
 // 1. 拿到 bytecode
-const ProjectList = path.resolve(__dirname, '../compiled/ProjectList.json');
-const Project = path.resolve(__dirname, '../compiled/Project.json');
+const ProjectList = require(path.resolve(__dirname, '../compiled/ProjectList.json'));
+const Project = require(path.resolve(__dirname, '../compiled/Project.json'));
 
 // 2. 配置 provider
 const web3 = new Web3(ganache.provider());
@@ -21,6 +22,8 @@ describe('Project Contract', () => {
         accounts = await web3.eth.getAccounts();
 
         //1.2 部署PojectList 合约
+        console.log("--------------------");
+        console.log("ProjectList:" + ProjectList);
         projectList = await new web3.eth.Contract(JSON.parse(ProjectList.interface))
             .deploy({ data: ProjectList.bytecode })
             .send({ from: accounts[0], gas: '5000000' });
@@ -66,10 +69,10 @@ describe('Project Contract', () => {
             value: '200',
         });
         const amount = await project.methods.investors(investor).call();
-        assert.ok(amount == '200')''
+        assert.ok(amount == '200');
     });
 
-    it('should require minInvest', async() => {
+    it('should require minInvest', async () => {
         try {
             const investor = accounts[1];
             await project.methods.contribute().send({
@@ -82,7 +85,7 @@ describe('Project Contract', () => {
         }
     });
 
-    it('should require maxInvest', async() => {
+    it('should require maxInvest', async () => {
         try {
             const investor = accounts[1];
             await project.methods.contribute().send({
@@ -92,10 +95,57 @@ describe('Project Contract', () => {
             assert.ok(false);
 
         } catch (err) {
-            assert.ok(err);            
+            assert.ok(err);
         }
     });
 
+    //完整的业务流测试
+    it('allows investor to approve payments', async () => {
+        //项目方、投资人、收款方账户
+        const owner = accounts[0];
+        const investor = accounts[1];
+        const receiver = accounts[2];
+
+        //收款前的余额
+        const oldBalance = new BigNumber(await web3.eth.getBalance(receiver));
+
+        // 投资项目
+        await project.methods.contribute().send({
+            from: investor,
+            value: '500',
+        });
+
+        //资金支出请求
+        await project.methods.createPayment('Rent office', 2000, receiver).send({
+            from: owner,
+            gas: '1000000',
+        });
+
+        //投票
+        await project.methods.approvePayment(0).send({
+            from: investor,
+            value: '1000000',
+        });
+
+        //资金划转
+        await project.methods.doPayment(0).send({
+            form: owner,
+            gas: '1000000',
+        });
+
+        //检查 payment 状态
+        const payment = await project.methods.payments(0).call();
+        assert.equal(payment.completed, true);
+        assert.equal(payment.voterCount, 1);
+
+        //收款后的余额
+        const newBalance = new BigNumber(await web3.eth.getBalance(receiver));
+        const balanceDiff = newBalance.minus(oldBalance);
+        console.log({ oldBalance, newNBalance, balanceDiff });
+
+        //确保精确的余额变化
+        assert.equal(balanceDiff, 2000);
+    });
 
 
 
