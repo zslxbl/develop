@@ -11,7 +11,7 @@ contract Car {
         brand = newBrand;
     }
 
-    function getBrand() public returns(string) {
+    function getBrand() public view returns(string) {
         return brand;
     }
 }
